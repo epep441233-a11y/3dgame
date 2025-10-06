@@ -8,7 +8,7 @@
         body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Courier New', Courier, monospace; }
         #scene-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.1s; }
         .overlay { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 10; background-color: rgba(0,0,0,0.8); }
-        #start-screen { background-color: rgba(0,0,0,0.7); cursor: default; }
+        #start-screen { background-color: #ffffff; transition: background-color 1.5s ease-in-out; }
         
         #game-over-screen { 
             background-color: transparent; 
@@ -41,11 +41,8 @@
             font-size: 20px;
         }
 
-        #instructions { width: 90%; max-width: 650px; background: rgba(0,0,0,0.3); padding: 20px 30px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
-        #instructions h1 { font-size: 36px; text-shadow: 0 0 10px #fff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
-        #instructions p { font-size: 16px; line-height: 1.6; }
-        #loading-text { font-size: 24px; margin-top: 20px; opacity: 0.8;}
-        .start-text { cursor: pointer; }
+        #instructions { width: 90%; max-width: 650px; }
+        #loading-text { font-size: 24px; margin-top: 20px; color: #000; }
         .ui-element { position: absolute; padding: 8px 12px; border-radius: 5px; font-size: 16px; text-shadow: 1px 1px 2px #000; z-index: 5; display: none; transition: background-color: 0.3s ease, font-size: 0.5s ease, padding 0.5s ease; }
         #san-bar-container { right: 15px; top: 5px; display: none; align-items: center; background: rgba(0,0,0,0.25); padding: 6px 10px; } 
         #san-bar-container span { font-size: 15px; transform: scaleX(0.9); margin-right: 5px; }
@@ -119,6 +116,190 @@
             text-shadow: 1px 1px 2px black;
         }
 
+        .status-icon-wrapper {
+            position: absolute;
+            right: 0; /* 所有圖示都靠右對齊 */
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            transition: top 0.3s ease-in-out; /* 向上遞補時的平滑動畫 */
+            height: 38px;
+        }
+
+        /* [修正] 恢復 tooltip 的原始樣式與行為 */
+        .status-icon-wrapper .status-tooltip {
+             color: #fff;
+             background: rgba(0,0,0,0.7);
+             padding: 5px 8px;
+             border-radius: 4px;
+             margin-right: 8px;
+             font-size: 14px;
+             text-align: right;
+             border: 1px solid rgba(255,255,255,0.3);
+             display: none; /* 預設隱藏 */
+             position: absolute;
+             top: 0;
+             right: 39px; /* 放在圖示左邊 */
+        }
+        .status-icon-wrapper .status-tooltip p {
+            margin: 0;
+            white-space: nowrap;
+         }
+        .status-icon-wrapper .status-tooltip .title {
+            font-weight: bold;
+            font-size: 12px;
+        }
+         .status-icon-wrapper .status-tooltip .desc {
+            font-size: 10px;
+            color: #ccc;
+         }
+        
+        .status-icon-wrapper .status-icon {
+            width: 36px;
+            height: 36px;
+            position: relative;
+            cursor: pointer;
+            font-size: 32px; /* 用字體大小來控制 emoji 圖示大小 */
+            line-height: 36px;
+            text-align: center;
+            filter: drop-shadow(0 0 2px black);
+        }
+
+        /* 圖示右下角的倒計時計數器 */
+        .status-icon .status-timer {
+            position: absolute;
+            bottom: -7px;
+            right: -3px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .status-icon .status-stacks {
+            position: absolute;
+            top: -9px;
+            left: -4px;
+            width: 18px;    /* 固定寬度 */
+            height: 18px;   /* 固定高度 */
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            background-color: rgba(200, 0, 0, 0.8);
+            border-radius: 50%; /* 變成圓形 */
+            display: flex;      /* 使用 Flexbox 來讓數字置中 */
+            justify-content: center;
+            align-items: center;
+            line-height: 1;     /* 移除多餘行高 */
+            padding: 0;         /* 移除內邊距 */
+        }
+
+        /* 恐懼爆發的合併爆炸特效 */
+        .explosion-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            opacity: 1;
+            animation: explosion 0.4s ease-out forwards;
+        }
+        .explosion-effect::before,
+        .explosion-effect::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, #ffd700 20%, transparent 70%);
+            border-radius: 50%;
+        }
+        .explosion-effect::before {
+            animation: explosion-sub 0.4s ease-out 0.05s forwards;
+        }
+        .explosion-effect::after {
+            animation: explosion-sub 0.4s ease-out 0.1s forwards;
+        }
+
+        @keyframes explosion {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
+        }
+        @keyframes explosion-sub {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        /* [新增] 開始畫面的背景圖樣式 */
+#start-bg-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    z-index: -1; 
+}
+#start-bg-image {
+    position: absolute;
+    top: 50%; left: 50%;
+    height: 100%;
+    width: auto;
+    min-width: 105%; /* 確保寬度足夠移動 */
+    min-height: 105%; /* 確保高度足夠移動 */
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s ease-out;
+}
+/* [新增] 右上角信件圖示樣式 */
+#info-icon {
+    position: absolute;
+    top: 45px;
+    right: 15px;
+    font-size: 36px;
+    cursor: pointer;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    filter: drop-shadow(0 0 3px black);
+}
+#info-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    background-color: #f3440f; /* 橘紅色 */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    border: 2px solid white;
+}
+/* [新增] 遊戲說明彈出視窗樣式 */
+#info-modal {
+    background-color: rgba(0,0,0,0.7);
+    z-index: 20;
+    cursor: pointer;
+}
+#info-modal-content {
+    width: 90%;
+    max-width: 650px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 25px 35px;
+    border-radius: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left; /* 文字齊左 */
+    cursor: default;
+}
+
         @keyframes damage-flash { 0% { background-color: rgba(255, 0, 0, 0.6); } 100% { background-color: rgba(0, 0, 0, 0.25); } }
         .damage-flash-short { animation: damage-flash 0.4s ease-out; }
         .damage-flash-long { animation: damage-flash 0.8s ease-out; }
@@ -140,6 +321,40 @@
             pointer-events: none; z-index: 7; display: none;
         }
 
+        /* [請在這裡新增] 落雷特效的 CSS 動畫 */
+        .lightning-bolt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background-color: white;
+            box-shadow: 0 0 10px 5px #ff4444, 0 0 20px 10px #ff8888;
+            opacity: 0;
+            transform-origin: top center;
+            animation: lightning-strike 0.5s ease-out;
+            z-index: 100; /* 確保在最頂層 */
+        }
+
+        /* [請在這裡新增] 創傷反應暗角的 CSS */
+    #trauma-vignette-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 4; /* 比觸手高，比其他UI低 */
+        display: none; /* 預設隱藏 */
+    }
+
+        @keyframes lightning-strike {
+            0% { transform: translateY(-100px) scaleY(0); opacity: 0; }
+            20% { transform: translateY(0) scaleY(1); opacity: 1; }
+            80% { transform: translateY(0) scaleY(1); opacity: 1; }
+            100% { transform: translateY(0) scaleY(1); opacity: 0; }
+        }
+        
         @media (orientation: portrait) { #orientation-overlay { display: flex; } #scene-container, #san-bar-container, #joystick-base, #joystick-handle, #treasure-canvas, #treasure-counter-text { display: none !important; } }
     </style>
 </head>
@@ -150,17 +365,25 @@
     </div>
     <div id="scene-container"></div>
 
-    <div id="start-screen" class="overlay">
-        <div id="instructions">
-            <h1>3D 棋盤迷宮</h1>
-            <p>在巨大的棋盤上移動，尋找隱藏的寶藏，並找到最終的出口。但要小心...棋子們會自行移動，阻礙你的去路。被它們推擠會讓你迷失方向（SAN值下降），當SAN值歸零時，你將永遠困在這個維度中。</p>
-            <p id="loading-text">模型資源載入中...</p>
-        </div>
+   <div id="start-screen" class="overlay">
+    <div id="start-bg-container">
+        <img id="start-bg-image" src="https://i.postimg.cc/8cCKJdXN/opendoor.jpg" alt="遊戲背景">
     </div>
+
+    <div id="info-icon">✉️<span id="info-badge">1</span></div>
+
+    <div id="instructions">
+        <p id="loading-text">完整世界建構中...</p>
+    </div>
+</div>
     <div id="win-screen" class="overlay">
-        <h1>恭喜通關！</h1> <p>您已成功逃離棋盤迷宮。</p>
+        <h1>恭喜通關！</h1> <p>你可以不完美，但完整。</p>
         <button class="restart-button" onclick="location.reload()">重新挑戰</button>
     </div>
+    <div id="info-modal" class="overlay" style="display: none;">
+    <div id="info-modal-content">
+        </div>
+</div>
     <div id="game-over-screen" class="overlay" style="display: none;">
         <h1></h1>
         <p>點擊畫面重新探索</p>
@@ -175,23 +398,13 @@
     </div>
     
     <div id="status-effect-container">
-        <div id="status-tooltip">
-            <p class="title">狩獵印記</p>
-            <p class="desc">被附上狩獵印記時遭到凝視，會降低理智值</p>
+
         </div>
-        <div id="status-icon">
-            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; filter: drop-shadow(0 0 2px black); transform: rotate(200deg);">
-                <path d="M28,15 C30,17 40,50 35,83 L31,85 C36,50 26,17 28,15 Z" fill="#E53E3E" />
-                <path d="M48,15 C50,17 60,50 55,83 L51,85 C56,50 46,17 48,15 Z" fill="#E53E3E" />
-                <path d="M68,15 C70,17 80,50 75,83 L71,85 C76,50 66,17 68,15 Z" fill="#E53E3E" />
-            </svg>
-            <span id="status-timer"></span>
-        </div>
-    </div>
     
     <div id="joystick-base"></div> <div id="joystick-handle"></div>
     <canvas id="vignette-canvas"></canvas>
-    
+    <canvas id="trauma-vignette-canvas"></canvas>
+
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
     <script type="importmap">
     {
@@ -204,6 +417,256 @@
     <script type="module">
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        let infoIcon, infoModal, infoModalContent, infoBadge, startBgContainer;
+const gameDescription = "光明的黑暗的、善良的破碎的、討喜的難搞的、自信的自卑的……每個碎片都是自己的一部分，再探索中蒐集他們，完整自己。外界的推移、碰撞，和探索過程中產生的創傷、恐懼，都會降低心智的理智值。";
+
+        const DUCK_SETTINGS = {
+            COUNT: 12,      // 鴨子的總數量
+            HEIGHT: 39,     // 鴨子在空中的高度
+            SIZE: 6,        // 鴨子的長度大小 (米)
+            SPEED: 12,       // 鴨子的移動速度
+            TURN_SPEED: 1.5 // 鴨子的轉身速度
+        };
+        
+        const DUCK_NOD_SETTINGS = {
+            SPEED: 4,   // 點頭速度：數值越大，點頭越快。
+            ANGLE: 0.5 // 點頭幅度：數值越大，抬頭和低頭的角度越大。(0.35 約等於 20 度)
+        };
+
+        // 恐懼爆發 疊層邏輯的設定
+        const FEAR_ERUPTION_CONFIG = {
+            STACK_PER_DISTANCE: 1, // 玩家每移動 1.5 個單位，疊加一層
+            STACK_PER_ROTATION: 10 * (Math.PI / 180) // 玩家每轉動 10 度，疊加一層 (10度需轉換為弧度)
+        };
+
+        // 創傷反應 狀態的設定
+        const TRAUMA_REACTION_CONFIG = {
+            AUTO_MOVE_SPEED: 360 // 自動前進時的速度
+        };
+
+        const TRAUMA_VIGNETTE_CONFIG = {
+            COLOR: 'rgba(80, 20, 50, 0.99)', // 暗角顏色 (偏紅的暗紫色)
+            SIZE: 0.01, // 中心可見範圍的大小 (數值越小，暗角越大)
+            FEATHER: 0.36 // 邊緣模糊/羽化的程度 (數值越大，邊緣越模糊)
+        };
+
+        function updateTraumaVignette() {
+        const canvas = document.getElementById('trauma-vignette-canvas');
+        if (!canvas) return;
+
+        if (player.userData.isTraumaActive) {
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            // 確保 canvas 尺寸與視窗一致
+            if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const innerRadius = w * TRAUMA_VIGNETTE_CONFIG.SIZE;
+            const outerRadius = w * TRAUMA_VIGNETTE_CONFIG.FEATHER;
+
+            const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius, centerX, centerY, outerRadius);
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            gradient.addColorStop(1, TRAUMA_VIGNETTE_CONFIG.COLOR);
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+        } else {
+            canvas.style.display = 'none';
+        }
+    }
+        
+        const statusEffectManager = {
+            activeStatuses: [],
+            isMerging: false,
+            statusData: {
+                'huntingMark': { name: '狩獵印記', icon: `<svg viewBox="0 0 100 100" style="width: 100%; height: 100%; filter: drop-shadow(0 0 2px black); transform: rotate(200deg);"><path d="M28,15 C30,17 40,50 35,83 L31,85 C36,50 26,17 28,15 Z" fill="#E53E3E" /><path d="M48,15 C50,17 60,50 55,83 L51,85 C56,50 46,17 48,15 Z" fill="#E53E3E" /><path d="M68,15 C70,17 80,50 75,83 L71,85 C76,50 66,17 68,15 Z" fill="#E53E3E" /></svg>`, desc: '被附上狩獵印記時遭到凝視，會造成"恐懼爆發"' },
+                'gaze': { name: '慾念凝視', icon: '👁️', desc: '受到慾念凝視時，若身上有狩獵印記，會造成"恐懼爆發"' },
+                'fearEruption': { name: '恐懼爆發', icon: '☠️', desc: '恐懼爆發期間，任何移動都會疊加恐懼值，恐懼值達至10層會產生"創傷反應"' },
+                'trauma': { name: '創傷反應', icon: '💔', desc: '因創傷而產生激烈反應，不受控的暴衝來試圖逃避恐懼' }
+            },
+            
+            // [全新] 統一的 tooltip 隱藏管理器，取代舊的錯誤方法
+            init() {
+                document.addEventListener('pointerup', () => this.hideAllTooltips(), true);
+                document.addEventListener('touchend', () => this.hideAllTooltips(), true);
+            },
+            hideAllTooltips() {
+                this.activeStatuses.forEach(status => {
+                    const tooltip = status.element.querySelector('.status-tooltip');
+                    if (tooltip) tooltip.style.display = 'none';
+                });
+            },
+
+            hasStatus(id) { return this.activeStatuses.some(s => s.id === id); },
+            getStatus(id) { return this.activeStatuses.find(s => s.id === id); },
+
+            addStatus(id, duration, stacks = 1) {
+                const existingStatus = this.getStatus(id);
+                if (existingStatus) {
+                    if (duration !== Infinity) {
+                        existingStatus.endTime = performance.now() + duration * 1000;
+                    }
+                    if(id === 'fearEruption') { this.updateStacks('fearEruption', existingStatus.stacks); }
+                } else {
+                    const data = this.statusData[id];
+                    if (!data) return;
+                    const newStatus = {
+                        id: id,
+                        endTime: duration === Infinity ? Infinity : performance.now() + duration * 1000,
+                        duration: duration,
+                        stacks: stacks,
+                        element: this.createElement(id, data)
+                    };
+                    this.activeStatuses.push(newStatus);
+                    document.getElementById('status-effect-container').appendChild(newStatus.element);
+                    if(id === 'fearEruption') { this.updateStacks('fearEruption', 1); }
+                }
+                this.updateUI();
+            },
+
+            removeStatus(id) {
+                const index = this.activeStatuses.findIndex(s => s.id === id);
+                if (index > -1) {
+                    const [removedStatus] = this.activeStatuses.splice(index, 1);
+                    if (removedStatus.element) removedStatus.element.remove();
+                    this.updateUI();
+                }
+            },
+
+            updateStacks(id, newStacks) {
+                const status = this.getStatus(id);
+                if (status) {
+                    status.stacks = newStacks;
+                    const stacksElement = status.element.querySelector('.status-stacks');
+                    if (stacksElement) {
+                        stacksElement.textContent = newStacks;
+                        stacksElement.style.display = newStacks > 0 ? 'block' : 'none';
+                    }
+                }
+            },
+            
+            // [全新] 徹底修正事件監聽器，不再汙染全域
+            createElement(id, data) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'status-icon-wrapper';
+                wrapper.dataset.id = id;
+                wrapper.innerHTML = `
+                    <div class="status-tooltip"><p class="title">${data.name}</p><p class="desc">${data.desc}</p></div>
+                    <div class="status-icon">${data.icon}<span class="status-timer"></span><span class="status-stacks" style="display: none;"></span></div>`;
+                
+                const iconElement = wrapper.querySelector('.status-icon');
+                const tooltipElement = wrapper.querySelector('.status-tooltip');
+
+                const showTooltip = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.hideAllTooltips();
+                    tooltipElement.style.display = 'block';
+                };
+                
+                iconElement.addEventListener('pointerdown', showTooltip);
+                iconElement.addEventListener('touchstart', showTooltip);
+
+                return wrapper;
+            },
+            
+            triggerMergeAnimation() {
+                if (this.isMerging) return;
+                const mark = this.getStatus('huntingMark')?.element;
+                const gaze = this.getStatus('gaze')?.element;
+                if (!mark || !gaze) return;
+
+                this.isMerging = true;
+
+                // [修正] 在動畫開始時，就觸發落雷特效
+                const targetIconForEffect = mark.querySelector('.status-icon');
+                if (targetIconForEffect) {
+                    const lightning = document.createElement('div');
+                    lightning.className = 'lightning-bolt';
+                    targetIconForEffect.appendChild(lightning);
+                    
+                    // 動畫結束後自動移除落雷元素
+                    setTimeout(() => {
+                        lightning.remove();
+                    }, 500); // 500ms 對應 CSS 動畫的持續時間
+                }
+
+                const markClone = mark.cloneNode(true);
+                const gazeClone = gaze.cloneNode(true);
+                document.body.appendChild(markClone);
+                document.body.appendChild(gazeClone);
+
+                [markClone, gazeClone].forEach(clone => {
+                    const originalElem = (clone.dataset.id === 'huntingMark' ? mark : gaze);
+                    const originalRect = originalElem.getBoundingClientRect();
+                    clone.style.position = 'fixed';
+                    clone.style.top = `${originalRect.top}px`;
+                    clone.style.right = `${window.innerWidth - originalRect.right}px`;
+                    clone.style.transition = 'all 0.4s ease-in-out';
+                    clone.style.zIndex = '99';
+                });
+
+                mark.style.opacity = '0';
+                gaze.style.opacity = '0';
+
+                setTimeout(() => {
+                    const targetRect = mark.getBoundingClientRect();
+                    gazeClone.style.top = `${targetRect.top}px`;
+                    gazeClone.style.right = `${window.innerWidth - targetRect.right}px`;
+                    gazeClone.style.transform = 'scale(0.5)';
+                    markClone.style.transform = 'scale(0.5)';
+                }, 10);
+                
+                setTimeout(() => {
+                    markClone.remove();
+                    gazeClone.remove();
+                    this.removeStatus('huntingMark');
+                    this.removeStatus('gaze');
+                    this.addStatus('fearEruption', 10);
+                    
+                    const eruptionIcon = this.getStatus('fearEruption')?.element?.querySelector('.status-icon');
+                    if(eruptionIcon) {
+                        const explosion = document.createElement('div');
+                        explosion.className = 'explosion-effect';
+                        eruptionIcon.appendChild(explosion);
+                    }
+                    this.isMerging = false;
+                }, 400);
+            },
+            
+            updateUI() {
+                const now = performance.now();
+                this.activeStatuses.forEach((status, index) => {
+                    if (!status.element) return;
+                    status.element.style.top = `${index * 40}px`;
+
+                    const timerElement = status.element.querySelector('.status-timer');
+                    if (!timerElement) return;
+
+                    if (status.duration !== Infinity) {
+                        const remaining = (status.endTime - now) / 1000;
+                        if (remaining > 0) {
+                            timerElement.textContent = Math.ceil(remaining);
+                        } else {
+                            this.removeStatus(status.id);
+                            if (status.id === 'trauma') {
+                                player.userData.isTraumaActive = false;
+                            }
+                        }
+                    } else {
+                        timerElement.textContent = '';
+                    }
+                });
+            }
+        };
 
         let camera, scene, renderer, skydome, floor;
         let ambientLight, directionalLight;
@@ -268,11 +731,10 @@
         let summoningCircle = {
             group: null, symbols: [], animation: { active: false, state: 'idle', startTime: 0, ring: null, hexagram: null, lightCurtain: null }, puzzleSolved: false, active: false
         };
-
-        let huntingMark = { active: false, endTime: 0, timerId: null };
         
         let cameraFrustum = new THREE.Frustum();
         let projScreenMatrix = new THREE.Matrix4();
+        const duckBox = new THREE.Box3();
         
         let treasureCanvas, treasureCtx;
         let magicCircle = { rotations: { star: 0, sq1: 0, sq2: 0 }, collectedColors: [], flash: { active: false, startTime: 0, duration: 3000 }, finish: { active: false, startTime: 0, duration: 1500, textFired: false } };
@@ -302,6 +764,11 @@ let attackEffectManager = {
     sprite: null,
     active: false,
     animation: {}
+};
+let duckManager = {
+    ducks: [],
+    isActive: false,
+    mixer: null // 用於播放動畫
 };
 let vortexTexture, attackEffectTexture; // 用來存放您載入的圖片
         
@@ -344,7 +811,8 @@ let vortexTexture, attackEffectTexture; // 用來存放您載入的圖片
                 rookWhite_low: 'https://epep441233-a11y.github.io/3dgame/rookwhite0.glb',
                 rookBlack_low: 'https://epep441233-a11y.github.io/3dgame/rookblack0.glb',
                 boss: 'https://epep441233-a11y.github.io/3dgame/doorboss.glb',
-		vortex: 'https://epep441233-a11y.github.io/3dgame/door.glb',
+		        duck: 'https://epep441233-a11y.github.io/3dgame/bird.glb',
+                vortex: 'https://epep441233-a11y.github.io/3dgame/door.glb',
             };
 
             const promises = Object.entries(modelsToLoad).map(async ([name, url]) => {
@@ -364,6 +832,42 @@ let vortexTexture, attackEffectTexture; // 用來存放您載入的圖片
             await Promise.all(promises);
 
         }
+
+function showInfoModal(e) {
+    e.stopPropagation(); // 防止點擊圖示時觸發開始遊戲
+    infoModal.style.display = 'flex';
+    if (infoBadge) {
+        infoBadge.style.display = 'none';
+    }
+}
+
+function hideInfoModal() {
+    infoModal.style.display = 'none';
+}
+
+function handleDeviceTilt(event) {
+    // event.gamma 是左右傾斜角度 (-90 to 90)
+    if (!gameStarted && event.gamma != null) {
+        const tiltLR = event.gamma;
+        const maxTilt = 30; // 將 +/- 30度的傾斜視為最大範圍
+        const maxMove = 42; // 背景圖最大移動的像素值
+
+        // 限制傾斜值在我們的最大範圍內
+        const clampedTilt = Math.max(-maxTilt, Math.min(maxTilt, tiltLR));
+
+        // 計算移動百分比 (-1 to 1)
+        const movePercent = clampedTilt / maxTilt;
+
+        // 計算最終移動的像素值 (向右傾斜 gamma 為正，圖片向左移，所以 tx 為負)
+        const tx = -movePercent * maxMove;
+
+        const bgImage = document.getElementById('start-bg-image');
+        if (bgImage) {
+            // 在原有的置中與縮放基礎上，加上我們的橫向移動
+            bgImage.style.transform = `translate(calc(-50% + ${tx}px), -50%)`;
+        }
+    }
+}
 
         async function init() {
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 6000);
@@ -390,16 +894,32 @@ let vortexTexture, attackEffectTexture; // 用來存放您載入的圖片
             treasureCanvas = document.getElementById('treasure-canvas'); treasureCtx = treasureCanvas.getContext('2d');
             window.addEventListener('resize', onWindowResize);
             
+            // [修正] 將獲取新元素的程式碼移至最前方，確保它們能被正確找到
+            infoIcon = document.getElementById('info-icon');
+            infoBadge = document.getElementById('info-badge');
+            infoModal = document.getElementById('info-modal');
+            infoModalContent = document.getElementById('info-modal-content');
+            startBgContainer = document.getElementById('start-bg-container');
+
+            // [修正] 提前設定好彈出視窗的內容與事件
+            infoModalContent.innerHTML = `<p>${gameDescription}</p>`;
+            infoIcon.addEventListener('pointerdown', showInfoModal);
+            infoModal.addEventListener('pointerdown', hideInfoModal);
+            infoModalContent.addEventListener('pointerdown', (e) => e.stopPropagation());
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', handleDeviceTilt);
+            }
+
             const textureLoader = new THREE.TextureLoader();
-async function loadExtraTextures() {
-    const loader = new THREE.TextureLoader();
-    try {
-        vortexTexture = await loader.loadAsync('https://i.postimg.cc/ydjJt6NV/door1.png');
-        attackEffectTexture = await loader.loadAsync('https://i.postimg.cc/xC6Cgss8/door2.png');
-    } catch (error) {
-        console.error("無法載入額外特效圖片:", error);
-    }
-}
+            async function loadExtraTextures() {
+                const loader = new THREE.TextureLoader();
+                try {
+                    vortexTexture = await loader.loadAsync('https://i.postimg.cc/Wz4J9pgF/door1-1.png');
+                    attackEffectTexture = await loader.loadAsync('https://i.postimg.cc/GhVsQC2t/door2-2.png');
+                } catch (error) {
+                    console.error("無法載入額外特效圖片:", error);
+                }
+            }
             glowTexture = createGlowTexture(); 
             shadowTexture = createShadowTexture(); 
             smileyTexture = createSmileyTexture();
@@ -412,22 +932,29 @@ async function loadExtraTextures() {
             createVortex();
             startScreen.style.display = 'flex';
             
-            const statusIcon = document.getElementById('status-icon');
-            const statusTooltip = document.getElementById('status-tooltip');
-            statusIcon.addEventListener('pointerdown', () => { statusTooltip.style.display = 'block'; });
-            statusIcon.addEventListener('touchstart', (e) => { e.preventDefault(); statusTooltip.style.display = 'block'; });
-            document.addEventListener('pointerup', () => { statusTooltip.style.display = 'none'; });
-            document.addEventListener('touchend', () => { statusTooltip.style.display = 'none'; });
-
             onWindowResize();
             
-	await loadExtraTextures(); // 預先載入圖片
+	        await loadExtraTextures(); // 預先載入圖片
             await loadAllModels();
+
+            // [修正] 將資源載入完成後的邏輯放在這裡
             const loadingText = document.getElementById('loading-text');
-            loadingText.textContent = '點擊螢幕任何地方開始';
-            loadingText.classList.add('start-text');
+            loadingText.style.display = 'none'; // 隱藏"載入中"文字
+
+            // 讓背景圖和信件圖示淡入
+            startBgContainer.style.opacity = '1';
+            infoIcon.style.opacity = '1';
+
+            // 讓原本的白色背景變透明，以顯示後方的圖片
+            startScreen.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+            startScreen.style.cursor = 'pointer'; // 讓滑鼠變成可點擊的指標
+            
+            addPCControls();
+            
+            statusEffectManager.init(); 
+            
             startScreen.addEventListener('pointerdown', startGame, { once: true });
-        }
+        }    
         
         function startGame() { 
             startScreen.style.display = 'none'; 
@@ -491,10 +1018,6 @@ level.object.geometry.dispose(); if(level.object.material) level.object.material
             const tcText = document.getElementById('treasure-counter-text');
             tcText.style.opacity = '0';
             tcText.textContent = '';
-            
-            if (huntingMark.timerId) clearInterval(huntingMark.timerId);
-            huntingMark = { active: false, endTime: 0, timerId: null };
-            document.getElementById('status-icon').style.display = 'none';
 
             gameOverScreen.style.display = 'none'; gameOverScreen.style.backgroundColor = 'transparent';
             const goTitle = gameOverScreen.querySelector('h1'); const goSub = gameOverScreen.querySelector('p');
@@ -727,12 +1250,12 @@ level.object.geometry.dispose(); if(level.object.material) level.object.material
             const pieceTypes = [ 
                 { name: 'pawn', count: 8, speedRange: [5, 9], targetHeight: 18 }, 
                 { name: 'rook', count: 6, speedRange: [8, 13], targetHeight: 22 }, 
-                { name: 'knight', count: 6, speedRange: [11, 18], targetHeight: 24 }, 
+                { name: 'horse', count: 6, speedRange: [11, 18], targetHeight: 24 }, 
                 { name: 'bishop', count: 6, speedRange: [9, 15], targetHeight: 26 }, 
                 { name: 'queen', count: 4, speedRange: [12, 20], targetHeight: 28 }, 
                 { name: 'king', count: 4, speedRange: [4, 7], targetHeight: 30 }, 
                 { name: 'angel', count: 5, speedRange: [14, 22], targetHeight: 32 }, 
-                { name: 'devil', count: 5, speedRange: [14, 22], targetHeight: 32 }, 
+                { name: 'demon', count: 5, speedRange: [14, 22], targetHeight: 32 }, 
             ];
             
             const darkMaterial = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.4, metalness: 0.2, name: 'Black'});
@@ -1004,7 +1527,7 @@ function startVortexAnimation(position) {
         map: vortexTexture,
         transparent: true,
         opacity: 1.0,
-        alphaTest: 0.5,
+        alphaTest: 0.1,
         side: THREE.DoubleSide
     });
     const geometry = new THREE.PlaneGeometry(1, 1);
@@ -1116,7 +1639,7 @@ function startAttackEffect(position) {
     transparent: true, 
     opacity: 1.0,
     blending: THREE.NormalBlending, 
-    alphaTest: 0.2 // 【關鍵修正】消除遠看時的方形邊緣
+    alphaTest: 0.1 // 【關鍵修正】消除遠看時的方形邊緣
  });
     const sprite = new THREE.Sprite(material);
 
@@ -1126,7 +1649,7 @@ function startAttackEffect(position) {
 
     sprite.position.copy(position);
     sprite.position.y += 45;
-    sprite.position.add(forward.multiplyScalar(33)); // 將特效沿著BOSS前方推出33米
+    sprite.position.add(forward.multiplyScalar(36)); // 將特效沿著BOSS前方推出33米
 
     sprite.scale.set(0, 0, 1);
 
@@ -1153,7 +1676,7 @@ function updateAttackEffect(time, delta) {
 
     // 前半段放大
     const scaleProgress = Math.min(elapsed / (duration * 0.5), 1);
-    const scale = 60 * (1 - Math.pow(1 - scaleProgress, 3)); // 緩動放大
+    const scale = 69 * (1 - Math.pow(1 - scaleProgress, 3)); // 緩動放大
     sprite.scale.set(scale, scale, 1);
 
     // 後半段淡出
@@ -1166,6 +1689,147 @@ function updateAttackEffect(time, delta) {
         attackEffectManager.active = false;
         scene.remove(sprite);
         attackEffectManager.sprite = null;
+    }
+}
+
+// --- 鴨子核心功能 ---
+
+function createDucks() {
+    if (duckManager.isActive || !loadedModels.duck) return;
+
+    const columnObstacles = obstacles.filter(o => o.userData && o.userData.isMovable === false);
+
+    for (let i = 0; i < DUCK_SETTINGS.COUNT; i++) {
+        const duckMesh = createModelInstance('duck', DUCK_SETTINGS.SIZE);
+        if (!duckMesh) continue;
+        
+        const duckRadius = duckMesh.userData.collisionRadius || (DUCK_SETTINGS.SIZE / 2);
+        let position;
+        let validPosition = false;
+        let attempts = 0;
+
+        while (!validPosition && attempts < 100) {
+            const spawnBoundary = boundary * 0.9;
+            position = new THREE.Vector3(
+                (Math.random() - 0.5) * spawnBoundary * 2,
+                DUCK_SETTINGS.HEIGHT,
+                (Math.random() - 0.5) * spawnBoundary * 2
+            );
+            
+            let isOverlapping = false;
+            for (const col of columnObstacles) {
+                if (position.distanceTo(col.position) < duckRadius + col.userData.collisionRadius + 2) { // 增加一點緩衝
+                    isOverlapping = true; break;
+                }
+            }
+            if (!isOverlapping) {
+                for (const otherDuck of duckManager.ducks) {
+                    if (position.distanceTo(otherDuck.mesh.position) < duckRadius * 3) {
+                        isOverlapping = true; break;
+                    }
+                }
+            }
+            
+            if (!isOverlapping) validPosition = true;
+            else attempts++;
+        }
+
+        if (validPosition) {
+            duckMesh.position.copy(position);
+            duckMesh.visible = false;
+            scene.add(duckMesh);
+
+            // [全新] 初始化鴨子的速度
+            const initialAngle = Math.random() * Math.PI * 2;
+            const initialVelocity = new THREE.Vector3(Math.cos(initialAngle), 0, Math.sin(initialAngle));
+
+            const duck = {
+                mesh: duckMesh,
+                mixer: null,
+                action: null,
+                radius: duckRadius,
+                state: 'hidden',
+                // [全新] 不再有 targetQuaternion，只有 velocity
+                velocity: initialVelocity,
+                creationTime: performance.now()
+            };
+            
+            if (loadedModels.duck.animations && loadedModels.duck.animations.length > 0) {
+                const mixer = new THREE.AnimationMixer(duckMesh);
+                const clip = loadedModels.duck.animations[0];
+                if (clip) {
+                    const action = mixer.clipAction(clip);
+                    action.play();
+                    duck.mixer = mixer;
+                    duck.action = action;
+                }
+            }
+            duckManager.ducks.push(duck);
+        }
+    }
+    duckManager.isActive = true;
+}
+
+function updateDucks(time, delta) {
+    if (!duckManager.isActive) return;
+
+    const allDucks = duckManager.ducks;
+    const columnObstacles = obstacles.filter(o => o.userData && o.userData.isMovable === false);
+
+    for (let i = 0; i < allDucks.length; i++) {
+        const duck = allDucks[i];
+
+        if (!duck.mesh || !duck.mesh.parent) continue;
+        if (duck.mixer) duck.mixer.update(delta);
+
+        // [!!! 致命錯誤修正 !!!]
+        // 之前的程式碼在這裡只改變了狀態，但忘了讓鴨子顯示出來
+        if (duck.state === 'hidden') {
+            if (time - duck.creationTime > 2000) {
+                duck.state = 'visible';
+                duck.mesh.visible = true; // <--- 就是遺漏了這一行！！！
+            }
+            continue; // 在顯示出來之前，不進行任何移動
+        }
+
+        // --- 1. 碰撞檢測與速度反彈 ---
+        
+        // 邊界反彈
+        if ((duck.mesh.position.x > boundary - duck.radius && duck.velocity.x > 0) ||
+            (duck.mesh.position.x < -boundary + duck.radius && duck.velocity.x < 0)) {
+            duck.velocity.x *= -1;
+        }
+        if ((duck.mesh.position.z > boundary - duck.radius && duck.velocity.z > 0) ||
+            (duck.mesh.position.z < -boundary + duck.radius && duck.velocity.z < 0)) {
+            duck.velocity.z *= -1;
+        }
+
+        // 柱子反彈
+        for (const col of columnObstacles) {
+            const distVec = duck.mesh.position.clone().sub(col.position);
+            distVec.y = 0;
+            const distance = distVec.length();
+            const combinedRadius = duck.radius + col.userData.collisionRadius;
+
+            if (distance < combinedRadius) {
+                // [穩定性強化] 只有在向量長度大於0時才進行計算，避免產生NaN錯誤
+                if (distVec.lengthSq() > 0) {
+                    const penetration = combinedRadius - distance;
+                    const pushout = distVec.clone().normalize().multiplyScalar(penetration);
+                    duck.mesh.position.add(pushout);
+                    
+                    const normal = distVec.normalize();
+                    duck.velocity.reflect(normal);
+                }
+            }
+        }
+
+        // --- 2. 移動 ---
+        duck.mesh.position.add(duck.velocity.clone().normalize().multiplyScalar(DUCK_SETTINGS.SPEED * delta));
+        
+        // --- 3. 更新朝向與動畫 ---
+        duck.mesh.rotation.y = Math.atan2(duck.velocity.x, duck.velocity.z);
+        duck.mesh.rotation.x = Math.sin(time * 0.001 * DUCK_NOD_SETTINGS.SPEED) * DUCK_NOD_SETTINGS.ANGLE;
     }
 }
 
@@ -1439,7 +2103,7 @@ function updateAttackEffect(time, delta) {
                 }
                
                 if (distanceToPlayer < 4) { 
-                    applyHuntingMark();
+                    statusEffectManager.addStatus('huntingMark', 15); // 使用新的管理器，持續15秒
                     birdManager.state = 'arc';
                     birdManager.nextTargetTime = time + 4000 + Math.random() * 4000;
                     birdManager.arcData.turnRate = (Math.random() > 0.5 ? 1 : -1) * 0.4;
@@ -1814,36 +2478,6 @@ function updateAttackEffect(time, delta) {
             }
         }
         
-        function applyHuntingMark() {
-            const time = performance.now();
-            const statusIcon = document.getElementById('status-icon');
-            const statusTimer = document.getElementById('status-timer');
-            
-            huntingMark.active = true;
-            huntingMark.endTime = time + 15000;
-            statusIcon.style.display = 'block';
-
-            if (huntingMark.timerId) {
-                clearInterval(huntingMark.timerId);
-            }
-
-            const updateTimer = () => {
-                const now = performance.now();
-                const remaining = (huntingMark.endTime - now) / 1000;
-                
-                if (remaining <= 0) {
-                    clearInterval(huntingMark.timerId);
-                    huntingMark.active = false;
-                    huntingMark.timerId = null;
-                    statusIcon.style.display = 'none';
-                } else {
-                    statusTimer.textContent = Math.ceil(remaining);
-                }
-            };
-            updateTimer();
-            huntingMark.timerId = setInterval(updateTimer, 100);
-        }
-
         function onTouchStart(event) { event.preventDefault(); if (!gameStarted) return; const touch = event.changedTouches[0]; if (touch.clientX < window.innerWidth / 2) { if (!joystick.active) { joystick.id = touch.identifier; joystick.active = true; joystick.startX = touch.clientX; joystick.startY = touch.clientY; joystick.base.style.left = `${touch.clientX - 60}px`; joystick.base.style.top = `${touch.clientY - 60}px`; joystick.handle.style.left = `${touch.clientX - 30}px`; joystick.handle.style.top = `${touch.clientY - 30}px`; joystick.base.style.display = 'block'; joystick.handle.style.display = 'block'; } } else { if (!look.active) { look.id = touch.identifier; look.active = true; look.lastX = touch.clientX; look.lastY = touch.clientY; } } }
         
         function onTouchMove(event) { 
@@ -1860,7 +2494,7 @@ function updateAttackEffect(time, delta) {
                     joystick.handle.style.top = `${joystick.startY + Math.sin(angle) * dist - 30}px`; 
                 } else if (touch.identifier === look.id) { 
                     if(playerLookDisabled) { look.lastX = touch.clientX; look.lastY = touch.clientY; return; } 
-                    const movementX = (touch.clientX - look.lastX) * 0.006, movementY = (touch.clientY - look.lastY) * 0.006; 
+                    const movementX = (touch.clientX - look.lastX) * 0.007, movementY = (touch.clientY - look.lastY) * 0.007; 
                     player.rotation.y -= movementX; 
                     camera.rotation.x -= movementY; 
                     camera.rotation.x = Math.max(-PI_2, Math.min(PI_2, camera.rotation.x)); 
@@ -1872,6 +2506,39 @@ function updateAttackEffect(time, delta) {
 
         function onTouchEnd(event) { if (!gameStarted) return; for (let touch of event.changedTouches) { if (touch.identifier === joystick.id) { joystick.id = -1; joystick.active = false; joystick.base.style.display = 'none'; joystick.handle.style.display = 'none'; direction.x = 0; direction.z = 0; } else if (touch.identifier === look.id) { look.id = -1; look.active = false; } } }
 
+function addPCControls() {
+    const keyStates = {};
+    document.addEventListener('keydown', (event) => {
+        keyStates[event.code] = true;
+    });
+    document.addEventListener('keyup', (event) => {
+        keyStates[event.code] = false;
+    });
+
+    sceneContainer.addEventListener('mousedown', () => {
+        document.body.requestPointerLock();
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (document.pointerLockElement === document.body && !playerLookDisabled) {
+            player.rotation.y -= event.movementX * 0.002;
+            camera.rotation.x -= event.movementY * 0.002;
+            camera.rotation.x = Math.max(-PI_2, Math.min(PI_2, camera.rotation.x));
+        }
+    });
+
+    const pcUpdateInterval = setInterval(() => {
+        if (!gameStarted || joystick.active) return; // 如果手機搖桿正在使用，則不執行鍵盤操作
+
+        direction.x = 0;
+        direction.z = 0;
+        if (keyStates['KeyW']) direction.z = -1;
+        if (keyStates['KeyS']) direction.z = 1;
+        if (keyStates['KeyA']) direction.x = -1;
+        if (keyStates['KeyD']) direction.x = 1;
+    }, 16);
+}
+        
         function updateScreenShake(playerPos) { 
             let closestDist = Infinity; 
             obstacles.forEach(obs => { 
@@ -2502,6 +3169,80 @@ camera.getWorldPosition(gameOverAnimation.initialCamPos); camera.getWorldQuatern
 
         function animate() {
             requestAnimationFrame(animate);
+            
+            statusEffectManager.updateUI();
+
+        // 慾念凝視 (Gaze) 邏輯
+        let isDuckVisible = false;
+        if (duckManager.isActive) {
+            projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+            cameraFrustum.setFromProjectionMatrix(projScreenMatrix);
+
+            for (const duck of duckManager.ducks) {
+                if (duck.state === 'visible' && duck.mesh) {
+                    // 1. 為鴨子群組計算其在世界座標中的包圍盒
+                    duckBox.setFromObject(duck.mesh);
+                    
+                    // 2. 使用 intersectsBox 判斷包圍盒是否與視野相交
+                    if (cameraFrustum.intersectsBox(duckBox)) {
+                        isDuckVisible = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (isDuckVisible && !statusEffectManager.hasStatus('gaze')) {
+            statusEffectManager.addStatus('gaze', Infinity);
+        } else if (!isDuckVisible && statusEffectManager.hasStatus('gaze')) {
+            statusEffectManager.removeStatus('gaze');
+        }
+
+        // 恐懼爆發 (Fear Eruption) 觸發邏輯
+        if (statusEffectManager.hasStatus('huntingMark') && statusEffectManager.hasStatus('gaze') && !statusEffectManager.isMerging) { // [修正] 增加 !isMerging 判斷
+            if (statusEffectManager.hasStatus('fearEruption')) {
+                // 如果已存在，則刷新時間
+                statusEffectManager.removeStatus('huntingMark');
+                statusEffectManager.removeStatus('gaze');
+                statusEffectManager.addStatus('fearEruption', 10);
+            } else {
+                // 如果不存在，則觸發合併
+                statusEffectManager.triggerMergeAnimation();
+            }
+        }
+        
+        // 恐懼爆發 疊層邏輯
+        if (statusEffectManager.hasStatus('fearEruption')) {
+            const status = statusEffectManager.getStatus('fearEruption');
+            if (!player.userData.lastStackPosition) {
+                player.userData.lastStackPosition = player.position.clone();
+                player.userData.lastStackEuler = player.rotation.clone();
+            }
+
+            const distanceMoved = player.position.distanceTo(player.userData.lastStackPosition);
+            const rotationChanged = Math.abs(player.rotation.y - player.userData.lastStackEuler.y);
+
+            if (distanceMoved > FEAR_ERUPTION_CONFIG.STACK_PER_DISTANCE) {
+                const newStacks = Math.min(10, status.stacks + 1);
+                statusEffectManager.updateStacks('fearEruption', newStacks);
+                player.userData.lastStackPosition.copy(player.position);
+            }
+            if (rotationChanged > FEAR_ERUPTION_CONFIG.STACK_PER_ROTATION) {
+                const newStacks = Math.min(10, status.stacks + 1);
+                statusEffectManager.updateStacks('fearEruption', newStacks);
+                player.userData.lastStackEuler.copy(player.rotation);
+            }
+            
+            // 創傷反應 (Trauma) 觸發邏輯
+            if (status.stacks >= 10 && !player.userData.isTraumaActive) {
+                statusEffectManager.removeStatus('fearEruption');
+                statusEffectManager.addStatus('trauma', 12);
+                player.userData.isTraumaActive = true;
+            }
+        } else {
+             player.userData.lastStackPosition = null;
+             player.userData.lastStackEuler = null;
+        }
+
             const time = performance.now(); 
             const delta = Math.min((time - prevTime) / 1000, 0.05);
             
@@ -2559,15 +3300,15 @@ camera.getWorldPosition(gameOverAnimation.initialCamPos); camera.getWorldQuatern
             updateFallingPieces(time, delta); 
             updateSmileyBalls(time, delta);
             updateLightning(time, delta);
+            updateTraumaVignette();
             updateChaosOrb(time, delta);
             updateBird(time, delta);
             updateBoss(time, delta);
             updateVortex(time, delta);
-	    updateAttackEffect(time, delta);
+	        updateAttackEffect(time, delta);
+            updateDucks(time, delta);
             
             if(summoningCircle.active) updateSummoningCircle(time, delta);
-            
-            velocity.x *= (1 - 10 * delta); velocity.z *= (1 - 10 * delta);
             
             let currentlyTouchingPiece = null; let collisionCount = 0;
             const allPushers = obstacles.filter(o => (o.userData.isMovable || o.userData.isSmiley) && o.parent);
@@ -2584,9 +3325,31 @@ camera.getWorldPosition(gameOverAnimation.initialCamPos); camera.getWorldQuatern
             if (isBeingPushed && !currentlyTouchingPiece) { isBeingPushed = false; pushingPiece = null; } 
             else if (!isBeingPushed && currentlyTouchingPiece) { isBeingPushed = true; pushingPiece = currentlyTouchingPiece; }
 
-            if (!isBeingPushed && (direction.x !== 0 || direction.z !== 0)){ const moveDir = new THREE.Vector3(direction.x, 0, direction.z); moveDir.applyQuaternion(player.quaternion).normalize(); velocity.x += moveDir.x * 60 * delta; velocity.z += moveDir.z * 60 * delta; }
-            
-            // 修正：笑臉球碰撞邏輯
+            velocity.x *= (1 - 10 * delta);
+            velocity.z *= (1 - 10 * delta);
+
+            const playerSpeed = 66; // [這裡可以調整平時的基礎移動速度]
+
+            // --- 玩家操控的移動 ---
+            if (!isBeingPushed && (direction.x !== 0 || direction.z !== 0)) {
+                const moveDir = new THREE.Vector3(direction.x, 0, direction.z);
+                moveDir.applyQuaternion(player.quaternion).normalize();
+                velocity.x += moveDir.x * playerSpeed * delta;
+                velocity.z += moveDir.z * playerSpeed * delta;
+            }
+
+            // --- 「創傷反應」狀態的自動前進 ---
+            if (player.userData.isTraumaActive) {
+                const forward = new THREE.Vector3(0, 0, -1);
+                const worldQuaternion = new THREE.Quaternion();
+                camera.getWorldQuaternion(worldQuaternion);
+                forward.applyQuaternion(worldQuaternion);
+                
+                velocity.x += forward.x * TRAUMA_REACTION_CONFIG.AUTO_MOVE_SPEED * delta;
+                velocity.z += forward.z * TRAUMA_REACTION_CONFIG.AUTO_MOVE_SPEED * delta;
+            }
+
+            // --- 笑臉球碰撞的推力 ---
             if(isBeingPushed && pushingPiece) { 
                 let speed = 0;
                 if (pushingPiece.userData.isSmiley) {
@@ -2709,6 +3472,9 @@ if (treasuresFound === 3) {
     if (!chaosOrb.active && chaosOrb.state === 'idle') {
         activateChaosOrb();
     }
+}
+if (treasuresFound === 1 && !duckManager.isActive) {
+    createDucks();
 }
 if (treasuresFound === 5 && !summoningCircle.active) { 
     activateSummoningPuzzle();
